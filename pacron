@@ -1,0 +1,96 @@
+#! /bin/bash
+execname=$(basename $0)
+error() {
+    echo "$execname: $1" >&2
+    exit 1
+}
+
+print_usage() {
+    echo -e "usage: $execname [options]\n"
+    echo -e "PACman Run ON, the pacman hook wrapper | www.github.com/kevlar1818/pacron"
+    echo -e "\nCopyright 2014 Kevin Hanselman (See LICENSE or source)"
+    echo -e "\nOptions:"
+    echo -e "  -h\t\tshow this help text and exit"
+    echo -e "  -e\t\tedit the ~/.pacrontab file for the current user"
+}
+
+#pacrontab=~/.pacrontab # TODO: check for this file early
+pacrontab=~/Dropbox/Projects/pacron/pacrontab.example
+
+[ -f $pacrontab ] || error "File $pacrontab doesn't exist"
+
+verbose=
+while getopts ":h :e" opt; do
+    case $opt in
+        h)
+            print_usage
+            exit 0
+            ;;
+        e)
+            $EDITOR $pacrontab
+            exit
+            ;;
+    esac
+done
+
+if [ ! $(type pacman >& /dev/null) ]; then
+    pacman=$(which pacman)
+else
+    error "pacman not found"
+fi
+[[ $verbose ]] && echo "pacman = $pacman"
+
+packer=
+if [ ! $(type packer >& /dev/null) ]; then
+    packer=$(which packer)
+fi
+[[ $verbose ]] && echo "packer = $packer"
+
+patterns=($(cat $pacrontab | awk '{print $1}'))
+pre=()
+post=()
+idx=1
+while read line; do
+    pattern=$(echo "$line" | awk '{print $1}')
+    options=$1
+    if [[ "$options" == $pattern ]]; then
+        [[ $verbose ]] && echo -e "\t'$options' matched on '$pattern' on line $idx of $pacrontab"
+        when=$(echo "$line" | awk '{print $2}')
+        cmd=$(echo "$line" | awk '{for(i=1;i<3;i++) $i="";print}' | sed 's/^ *//')
+        case $when in
+            before)
+                pre+=("$cmd")
+                ;;
+            after)
+                post+=("$cmd")
+                ;;
+            *)
+                echo "Invalid timing '$when' on line $idx of $pacrontab" >&2
+                ;;
+        esac
+    fi
+    ((idx++))
+done < $pacrontab
+
+for cmd in "${pre[@]}"; do
+    [[ $verbose ]] && echo "Running '$cmd'..."
+    eval "$cmd"
+done
+
+if [ -n "$packer" ]; then
+    [[ $verbose ]] && echo "calling: '$packer $@'..."
+    $packer "$@" #TODO: it'd be great to suppress parse errors here...
+fi
+if [ $? -eq 5 ] || [ -z "$packer" ]; then
+    echo -ne "\x1b[1A\x1b[2K"
+    [[ $verbose ]] && echo "calling: '$pacman $@'..."
+    $pacman "$@"
+fi
+
+if [ $? -eq 0 ]; then
+    for cmd in "${post[@]}"; do
+        [[ $verbose ]] && echo "Running '$cmd'..."
+        eval "$cmd"
+    done
+fi
+

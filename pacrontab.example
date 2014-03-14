@@ -1,0 +1,4 @@
+-S*u*   before  source $HOME/Dropbox/Projects/pacron/exampleHook.sh 1
+-Syu    after  ~/Dropbox/Projects/pacron/exampleHook.sh 2
+-Q*    after   ~/Dropbox/Projects/pacron/exampleHook.sh post
+-Qi    before   ~/Dropbox/Projects/pacron/exampleHook.sh pre
