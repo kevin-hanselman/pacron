@@ -1,6 +1,6 @@
 # pacron
 
-`pacron` is a basic wrapper for Arch Linux's pacman and packer to provide hooks for other scripts. It's loosely modeled off of [cron](http://linux.die.net/man/5/crontab), the GNU/Linux utility, in which a "tab" file controls when commands are run.
+PACman Run ON is a basic wrapper for Arch Linux's pacman to provide simple hooks for other scripts and commands. It's loosely modeled off of [cron](http://linux.die.net/man/5/crontab), the GNU/Linux utility, in which a "tab" file controls when commands are run.
 
 ## Features
 * Wraps `pacman` and also [`packer`](https://github.com/keenerd/packer/wiki)
