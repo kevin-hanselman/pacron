@@ -1,0 +1,6 @@
+# pacrontab: table for pacron
+-S*u*   before  source $HOME/.config/pacron/hooks/print-args.sh "called before, first"
+-Syu*   before  ~/.config/pacron/hooks/print-args.sh "called before, second"
+-Qi   before  $HOME/.config/pacron/hooks/print-args.sh "called before"
+-Q*   after  ~/.config/pacron/hooks/print-args.sh "called after"
+

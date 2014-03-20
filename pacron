@@ -1,60 +1,91 @@
 #! /bin/bash
-execname=$(basename $0)
-error() {
-    echo "$execname: $1" >&2
-    exit 1
-}
+#   Copyright 2014 Kevin Hanselman
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
 print_usage() {
+    $pacman --help "$@"
+    echo ""
+    [ -n "$packer" ] && $packer --help $@
+    echo ""
     echo -e "usage: $execname [options]\n"
     echo -e "PACman Run ON, the pacman hook wrapper | www.github.com/kevlar1818/pacron"
     echo -e "\nCopyright 2014 Kevin Hanselman (See LICENSE or source)"
     echo -e "\nOptions:"
     echo -e "  -h\t\tshow this help text and exit"
-    echo -e "  -e\t\tedit the ~/.pacrontab file for the current user"
+    echo -e "  -e\t\tedit ~/.config/pacron/pacrontab"
+    exit 1
 }
 
-#pacrontab=~/.pacrontab # TODO: check for this file early
-pacrontab=~/Dropbox/Projects/pacron/pacrontab.example
+error() {
+    echo "$execname: $1" >&2
+    exit 1
+}
 
-[ -f $pacrontab ] || error "File $pacrontab doesn't exist"
+run_cmds() {
+    for cmd in "$@"; do
+        if [ $? -ne 0 ]; then
+            exit $?
+        fi
+        [ $verbose ] && echo "Running '$cmd'..."
+        eval "$cmd"
+    done
+}
 
-verbose=
-while getopts ":h :e" opt; do
-    case $opt in
-        h)
-            print_usage
-            exit 0
-            ;;
-        e)
-            $EDITOR $pacrontab
-            exit
-            ;;
-    esac
-done
+trap "exit 0" SIGINT
+
+execname=$(basename $0)
 
 if [ ! $(type pacman >& /dev/null) ]; then
     pacman=$(which pacman)
 else
     error "pacman not found"
 fi
-[[ $verbose ]] && echo "pacman = $pacman"
+[ $verbose ] && echo "pacman path: $pacman"
 
 packer=
 if [ ! $(type packer >& /dev/null) ]; then
     packer=$(which packer)
 fi
-[[ $verbose ]] && echo "packer = $packer"
+[ $verbose ] && echo "packer path: $packer"
 
-patterns=($(cat $pacrontab | awk '{print $1}'))
+# set default variables before config
+verbose=
+
+pacrontab=~/.config/pacron/pacrontab
+pacronconf=~/.config/pacron/pacron.conf
+[ -r $pacronconf ] && source $pacronconf
+[ -f $pacrontab ] || error "File $pacrontab doesn't exist"
+
+[ "$*" == "-e" ] && $EDITOR $pacrontab && exit 0
+
+while getopts ":h" opt; do
+    case $opt in
+        h)
+            print_usage
+            ;;
+    esac
+done
+
 pre=()
 post=()
-idx=1
+ln=1
 while read line; do
+    [[ "$line" == "#*" ]] && continue
     pattern=$(echo "$line" | awk '{print $1}')
     options=$1
     if [[ "$options" == $pattern ]]; then
-        [[ $verbose ]] && echo -e "\t'$options' matched on '$pattern' on line $idx of $pacrontab"
+        [ $verbose ] && echo -e "$pacrontab line $ln: '$options' matched '$pattern'"
         when=$(echo "$line" | awk '{print $2}')
         cmd=$(echo "$line" | awk '{for(i=1;i<3;i++) $i="";print}' | sed 's/^ *//')
         case $when in
@@ -65,32 +96,27 @@ while read line; do
                 post+=("$cmd")
                 ;;
             *)
-                echo "Invalid timing '$when' on line $idx of $pacrontab" >&2
+                echo "Invalid timing '$when' on line $ln of $pacrontab" >&2
                 ;;
         esac
     fi
-    ((idx++))
+    ((ln++))
 done < $pacrontab
 
-for cmd in "${pre[@]}"; do
-    [[ $verbose ]] && echo "Running '$cmd'..."
-    eval "$cmd"
-done
+run_cmds "${pre[@]}"
 
 if [ -n "$packer" ]; then
-    [[ $verbose ]] && echo "calling: '$packer $@'..."
-    $packer "$@" #TODO: it'd be great to suppress parse errors here...
+    [ $verbose ] && echo "calling: '$packer $@'..."
+    $packer "$@"
+    packer_exit=$?
 fi
-if [ $? -eq 5 ] || [ -z "$packer" ]; then
-    echo -ne "\x1b[1A\x1b[2K"
-    [[ $verbose ]] && echo "calling: '$pacman $@'..."
+if [ $packer_exit -eq 5 ] || [ -z "$packer" ]; then
+    if [ $packer_exit -eq 5 ]; then
+        echo -ne "\x1b[1A\x1b[2K" # overwrite last line of output (packer parse fail)
+    fi
+    [ $verbose ] && echo "calling: '$pacman $@'..."
     $pacman "$@"
 fi
 
-if [ $? -eq 0 ]; then
-    for cmd in "${post[@]}"; do
-        [[ $verbose ]] && echo "Running '$cmd'..."
-        eval "$cmd"
-    done
-fi
+run_cmds "${post[@]}"
 
