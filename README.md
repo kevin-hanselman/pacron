@@ -7,6 +7,13 @@ PACman Run ON is a basic wrapper for Arch Linux's pacman to provide simple hooks
 * Automatically runs scripts before or after `pacman`/`packer` executes
 * Uses bash pattern matching on options passed to `pacman`/`packer` to choose which commands to run
 
+## Quick Setup
+```
+cd && git clone https://github.com/kevlar1818/pacron .pacron-git
+mkdir -p ~/.config
+cp -r .pacron-git/example-config .config/pacron
+```
+
 ## Usage
 ```
 usage: pacron [options]
@@ -30,12 +37,8 @@ Each row of the `pacrontab` is made up of whitespace separated columns. The firs
 
 To see an example `pacrontab`, check out [the source](https://github.com/kevlar1818/pacron/blob/master/example-config/pacrontab).
 
-## Quick Setup
-```
-cd && git clone https://github.com/kevlar1818/pacron .pacron-git
-mkdir -p ~/.config
-cp -r .pacron-git/example-config .config/pacron
-```
+## Hook scripts
+To view possible hooks that may be developed, as well as suggest your own, visit the [wiki](https://github.com/kevlar1818/pacron/wiki/Hook-Ideas).
 
 ## Contributing
 Yes, please do! Pull request away.
