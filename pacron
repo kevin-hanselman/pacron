@@ -34,11 +34,12 @@ error() {
 
 run_cmds() {
     for cmd in "$@"; do
-        if [ $? -ne 0 ]; then
-            exit $?
-        fi
         [ $verbose ] && echo "Running '$cmd'..."
         eval "$cmd"
+        ret=$?
+        if [ $ret -ne 0 ]; then
+            exit $ret
+        fi
     done
 }
 
