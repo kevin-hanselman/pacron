@@ -19,7 +19,7 @@ def main():
     feed = feedparser.parse('https://www.archlinux.org/feeds/news/')
     latestNewsDate = getLatestNewsDate(feed)
 
-    #print('Last upgraded on {}\nLatest news on {}'.format(lastUpgradeDate, latestNewsDate))
+    print('Last upgraded on {}'.format(lastUpgradeDate.strftime('%c')))
 
     if latestNewsDate >= lastUpgradeDate:
         news = getNewsSince(lastUpgradeDate, feed)
@@ -47,7 +47,7 @@ def getNewsSince(date, feed):
 
 def printEntry(entry):
     summary = re.sub('<[^<]+?>', '', entry.summary)
-    summary = summary.replace('\n',' ')
+    summary = re.sub('\n+','\n\n', summary.strip())
     date = newsToDateTime(entry)
     datestr = date.strftime('%d %b %Y')
     print('{}\t({})\n\n{}\n\n{}'.format(entry.title, datestr, summary, entry.link))

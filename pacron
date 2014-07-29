@@ -13,18 +13,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-print_usage() {
-    $pacman --help "$@"
-    echo ""
-    [ -n "$packer" ] && $packer --help $@
-    echo ""
+usage() {
+    echo -e 'Use `pacman --help` and `packer --help` for more information\n'
     echo -e "usage: $execname [options]\n"
     echo -e "PACman Run ON, the pacman hook wrapper | www.github.com/kevlar1818/pacron"
     echo -e "\nCopyright 2014 Kevin Hanselman (See LICENSE or source)"
     echo -e "\nOptions:"
     echo -e "  -h\t\tshow this help text and exit"
-    echo -e "  -e\t\tedit ~/.config/pacron/pacrontab"
-    exit 1
+    echo -e "  -e\t\tedit $pacrontab"
+    echo -e "\nMore configuration settings can be found in $pacronconf"
 }
 
 error() {
@@ -47,6 +44,17 @@ trap "exit 0" SIGINT
 
 execname=$(basename $0)
 
+# set default variables before config
+verbose=
+
+pacrontab=$HOME/.config/pacron/pacrontab
+pacronconf=$HOME/.config/pacron/pacron.conf
+if [ -r "$pacronconf" ]; then
+    source $pacronconf
+elif [ -n "$verbose" ]; then
+    echo "$pacronconf not found. Using default settings."
+fi
+
 if [ ! $(type pacman >& /dev/null) ]; then
     pacman=$(which pacman)
 else
@@ -60,20 +68,18 @@ if [ ! $(type packer >& /dev/null) ]; then
 fi
 [ $verbose ] && echo "packer path: $packer"
 
-# set default variables before config
-verbose=
+[ -f "$pacrontab" ] || error "File $pacrontab not found"
 
-pacrontab=~/.config/pacron/pacrontab
-pacronconf=~/.config/pacron/pacron.conf
-[ -r $pacronconf ] && source $pacronconf
-[ -f $pacrontab ] || error "File $pacrontab doesn't exist"
-
-[ "$*" == "-e" ] && $EDITOR $pacrontab && exit 0
+if [ "$*" == "-e" ]; then
+    $EDITOR $pacrontab
+    exit 0
+fi
 
 while getopts ":h" opt; do
     case $opt in
         h)
-            print_usage
+            usage
+            exit 0
             ;;
     esac
 done

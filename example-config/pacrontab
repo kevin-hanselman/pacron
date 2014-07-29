@@ -1,5 +1,3 @@
 # pacrontab: table for pacron
--Syu   before  ~/.config/pacron/hooks/archnews.py
--Qi   before  $HOME/.config/pacron/hooks/print-args.sh "called before"
--Q*   after  ~/.config/pacron/hooks/print-args.sh "called after"
-
+# PATTERN   after/before    PATH
+-S*u*       before          ~/.config/pacron/hooks/archnews.py
