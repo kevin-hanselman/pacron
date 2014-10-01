@@ -1,3 +1,4 @@
 # pacrontab: table for pacron
 # PATTERN   after/before    PATH
 -S*u*       before          ~/.config/pacron/hooks/archnews.py
+-S*u*       after           vim -c 'PluginInstall' -c 'qa!'
