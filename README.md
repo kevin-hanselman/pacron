@@ -44,6 +44,3 @@ Options:
 
 ## Contributing
 Yes, please do! Pull request away.
-
-## Important!
-This repository is strictly a work in progress. It has a long way to go before it's good enough for serious use.
