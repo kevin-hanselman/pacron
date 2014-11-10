@@ -10,8 +10,8 @@ PACman Run ON is a basic wrapper for Arch Linux's pacman to provide simple hooks
 ## Hook Scripts
 This is a list of currently implemented hooks for `pacron`. If you'd like to suggest a hook, use the [issue tracker](https://github.com/kevlar1818/pacron/issues). If you have a hook you'd like to share, [open a pull request](https://github.com/kevlar1818/pacron/pulls)!
 
-- [x] Check and display recent Arch Linux news before performing a full system upgrade (`-Su` or `-Syu`).
-- [x] After performing a system upgrade, upgrade all [Vundle](https://github.com/gmarik/Vundle.vim) packages.
+- [x] Check and display recent Arch Linux news before performing a full system upgrade (`-Su`, `-Syu`, etc).
+- [x] After performing a system upgrade, upgrade all vim plugins.
 
 ## The `pacrontab`
 ```
@@ -42,5 +42,3 @@ Options:
   -e		edit ~/.config/pacron/pacrontab
 ```
 
-## Contributing
-Yes, please do! Pull request away.
