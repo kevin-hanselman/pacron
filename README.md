@@ -12,6 +12,7 @@ This is a list of currently implemented hooks for `pacron`. If you'd like to sug
 
 - [x] Check and display recent Arch Linux news before performing a full system upgrade (`-Su`, `-Syu`, etc).
 - [x] After performing a system upgrade, upgrade all vim plugins.
+- [x] If the pacman mirrorlist is updated, generate one using [Reflector](https://wiki.archlinux.org/index.php/Reflector).
 
 ## The `pacrontab`
 ```

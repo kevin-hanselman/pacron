@@ -1,6 +1,10 @@
 #! /usr/bin/python3
 
-import feedparser
+try:
+    import feedparser
+except:
+    sys.exit('This program requires feedparser (python 3.x)')
+
 import subprocess
 from datetime import datetime
 import sys
@@ -11,8 +15,7 @@ def main():
         try:
             lastUpgradeDate = datetime.strptime(sys.argv[1], '%m-%d-%Y')
         except:
-            print('Argument must be of format: mm-dd-yyyy')
-            sys.exit(1)
+            sys.exit('Argument must be of format: mm-dd-yyyy')
     else:
         lastUpgradeDate = getLastUpgradeDate()
 

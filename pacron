@@ -40,7 +40,7 @@ run_cmds() {
     done
 }
 
-trap "exit 0" SIGINT
+trap "exit 1" SIGINT
 
 execname=$(basename $0)
 
