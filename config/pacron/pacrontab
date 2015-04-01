@@ -1,5 +1,6 @@
 # pacrontab: table for pacron
 # PATTERN   after/before    PATH
 -S*u*       before          ~/.config/pacron/hooks/archnews.py
--S*u*       after           vim -c 'PlugUpdate' -c 'PlugUpgrade' -c 'qa!'
--S*u*       after           ~/.config/pacron/hooks/reflector-hook.sh
+-S*u*       after           vim -c 'PlugUpgrade' -c 'PlugUpdate' -c 'qa!'
+-S*         after           ~/.config/pacron/hooks/reflector-hook.sh
+-S*         after           ~/.config/pacron/hooks/kernel-reboot.sh
