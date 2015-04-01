@@ -7,6 +7,7 @@ PACman Run ON is a basic wrapper for Arch Linux's pacman to provide simple hooks
 - Check and display recent Arch Linux news before performing a full system upgrade (`-Su`, `-Syu`, etc).
 - After performing a system upgrade, upgrade all vim plugins.
 - If the pacman mirrorlist is updated, generate one using [Reflector](https://wiki.archlinux.org/index.php/Reflector).
+- If the Linux kernel is updated, offer to reboot the system. Useful if a kernel update is buried in a long list of upgradable packages.
 
 ## Can it do more?
 You bet! If you'd like to suggest a hook, use the [issue tracker](https://github.com/kevlar1818/pacron/issues). If you have a hook you'd like to share, [open a pull request](https://github.com/kevlar1818/pacron/pulls)!
