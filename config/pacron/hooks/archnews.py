@@ -1,14 +1,14 @@
 #! /usr/bin/python3
 
-try:
-    import feedparser
-except:
-    sys.exit('This program requires feedparser (python 3.x)')
-
 import subprocess
 from datetime import datetime
 import sys
 import re
+
+try:
+    import feedparser
+except:
+    sys.exit('This program requires feedparser (python 3.x)')
 
 def main():
     if len(sys.argv) > 1:
