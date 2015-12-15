@@ -4,3 +4,4 @@
 -S*u*       after           vim -c 'PlugUpgrade' -c 'PlugUpdate' -c 'qa!'
 -S*         after           ~/.config/pacron/hooks/reflector-hook.sh
 -S*         after           ~/.config/pacron/hooks/kernel-reboot.sh
+-S*u*       after           ~/.zprezto/update.sh

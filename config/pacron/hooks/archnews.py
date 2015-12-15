@@ -14,7 +14,7 @@ def main():
     if len(sys.argv) > 1:
         try:
             lastUpgradeDate = datetime.strptime(sys.argv[1], '%m-%d-%Y')
-        except:
+        except ValueError:
             sys.exit('Argument must be of format: mm-dd-yyyy')
     else:
         lastUpgradeDate = getLastUpgradeDate()
@@ -36,8 +36,16 @@ def main():
         print('No news.')
 
 def getLastUpgradeDate():
-    dt = subprocess.check_output('grep "starting full system upgrade" /var/log/pacman.log | tail -n1 | cut -d" " -f-2', shell=True, universal_newlines=True).strip()
-    return datetime.strptime(dt, '[%Y-%m-%d %H:%M]')
+    dt = subprocess.check_output('grep "starting full system upgrade" /var/log/pacman.log | tail -n1 | cut -d" " -f-2',
+                                 shell=True, universal_newlines=True).strip()
+    try:
+        return datetime.strptime(dt, '[%Y-%m-%d %H:%M]')
+    except ValueError:
+        if len(dt) == 0:
+            print('No system upgrade found. Not fetching Arch News.')
+            sys.exit(0)
+        else:
+            sys.exit('Failed parse system upgrade time: {!r}'.format(dt))
 
 def getLatestNewsDate(feed):
     return newsToDateTime(feed.entries[0])
