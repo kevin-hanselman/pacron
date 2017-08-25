@@ -2,6 +2,6 @@
 # PATTERN   after/before    PATH
 -S*u*       before          ~/.config/pacron/hooks/archnews.py
 -S*u*       after           vim -c 'PlugUpgrade' -c 'PlugUpdate' -c 'qa!'
+-S*u*       after           ~/.config/pacron/hooks/clean_pacman_cache.sh
 -S*         after           ~/.config/pacron/hooks/reflector-hook.sh
 -S*         after           ~/.config/pacron/hooks/kernel-reboot.sh
--S*u*       after           ~/.zprezto/update.sh

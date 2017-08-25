@@ -1,27 +1,19 @@
 #! /bin/bash
-#   Copyright 2014 Kevin Hanselman
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
+
+set -euo pipefail
 
 usage() {
-    echo -e 'Use `pacman --help` and `packer --help` for more information\n'
-    echo -e "usage: $execname [options]\n"
-    echo -e "PACman Run ON, the pacman hook wrapper | www.github.com/kevlar1818/pacron"
-    echo -e "\nCopyright 2014 Kevin Hanselman (See LICENSE or source)"
-    echo -e "\nOptions:"
-    echo -e "  -h\t\tshow this help text and exit"
-    echo -e "  -e\t\tedit $pacrontab"
-    echo -e "\nMore configuration settings can be found in $pacronconf"
+    echo 'Use pacman --help for more information'
+    echo
+    echo "usage: $execname [options]"
+    echo
+    echo "PACman Run ON, the pacman hook wrapper | www.github.com/kevlar1818/pacron"
+    echo
+    echo "Options:"
+    echo "  -h    show this help text and exit"
+    echo "  -e    edit $pacrontab"
+    echo
+    echo "More configuration settings can be found in $pacronconf"
 }
 
 error() {
@@ -31,7 +23,7 @@ error() {
 
 run_cmds() {
     for cmd in "$@"; do
-        [ $verbose ] && echo "Running '$cmd'..."
+        [ -n "$verbose" ] && echo "Running '$cmd'..."
         eval "$cmd"
         ret=$?
         if [ $ret -ne 0 ]; then
@@ -42,36 +34,34 @@ run_cmds() {
 
 trap "exit 1" SIGINT
 
-execname=$(basename $0)
+execname=$(basename "$0")
 
 # set default variables before config
 verbose=
+aur_helper=
 
 pacrontab=$HOME/.config/pacron/pacrontab
 pacronconf=$HOME/.config/pacron/pacron.conf
 if [ -r "$pacronconf" ]; then
-    source $pacronconf
-elif [ -n "$verbose" ]; then
-    echo "$pacronconf not found. Using default settings."
-fi
-
-if [ ! $(type pacman >& /dev/null) ]; then
-    pacman=$(which pacman)
+    # shellcheck disable=SC1090
+    source "$pacronconf"
 else
-    error "pacman not found"
+    echo "WARNING: $pacronconf not found. Using default settings."
 fi
-[ $verbose ] && echo "pacman path: $pacman"
 
-packer=
-if [ ! $(type packer >& /dev/null) ]; then
-    packer=$(which packer)
+if ! type pacman &> /dev/null; then
+    error 'pacman not found'
 fi
-[ $verbose ] && echo "packer path: $packer"
+
+if [ -n "$aur_helper" ] && ! type "$aur_helper" &> /dev/null; then
+    error "'$aur_helper' not found"
+fi
+[ -n "$verbose" ] && echo "AUR helper: $aur_helper"
 
 [ -f "$pacrontab" ] || error "File $pacrontab not found"
 
 if [ "$*" == "-e" ]; then
-    $EDITOR $pacrontab
+    $EDITOR "$pacrontab"
     exit 0
 fi
 
@@ -87,12 +77,14 @@ done
 pre=()
 post=()
 ln=1
-while read line; do
+while read -r line; do
     [[ "$line" == "#*" ]] && continue
     pattern=$(echo "$line" | awk '{print $1}')
     options=$1
+    # $pattern must be unquoted for bash glob matching to work
+    # shellcheck disable=SC2053
     if [[ "$options" == $pattern ]]; then
-        [ $verbose ] && echo -e "$pacrontab line $ln: '$options' matched '$pattern'"
+        [ -n "$verbose" ] && echo -e "$pacrontab line $ln: '$options' matched '$pattern'"
         when=$(echo "$line" | awk '{print $2}')
         cmd=$(echo "$line" | awk '{for(i=1;i<3;i++) $i="";print}' | sed 's/^ *//')
         case $when in
@@ -108,22 +100,21 @@ while read line; do
         esac
     fi
     ((ln++))
-done < $pacrontab
+done < "$pacrontab"
 
 run_cmds "${pre[@]}"
 
-if [ -n "$packer" ]; then
-    [ $verbose ] && echo "calling: '$packer $@'..."
-    $packer "$@"
-    packer_exit=$?
+if [ -n "$aur_helper" ]; then
+    [ -n "$verbose" ] && echo "calling: '$aur_helper $*'..."
+    $aur_helper "$@"
+    aur_helper_exit=$?
 fi
-if [ $packer_exit -eq 5 ] || [ -z "$packer" ]; then
-    if [ $packer_exit -eq 5 ]; then
-        echo -ne "\x1b[1A\x1b[2K" # overwrite last line of output (packer parse fail)
+if [ $aur_helper_exit -eq 5 ] || [ -z "$aur_helper" ]; then
+    if [ $aur_helper_exit -eq 5 ]; then
+        echo -ne "\x1b[1A\x1b[2K" # overwrite last line of output (aur_helper parse fail)
     fi
-    [ $verbose ] && echo "calling: '$pacman $@'..."
-    $pacman "$@"
+    [ -n "$verbose" ] && echo "calling: 'pacman $*'..."
+    pacman "$@"
 fi
 
 run_cmds "${post[@]}"
-
